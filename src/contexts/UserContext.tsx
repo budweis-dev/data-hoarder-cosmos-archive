@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useWeb3Connection, usePlayerData } from '@/hooks/useWeb3';
+import { useWeb3Connection, usePlayerData, usePlayerActions } from '@/hooks/useWeb3';
 import { useToast } from '@/hooks/use-toast';
 
 interface PlayerData {
@@ -53,6 +53,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     refetch: refetchPlayerData 
   } = usePlayerData(currentAccount || undefined);
   
+  const { registerPlayer: registerPlayerAction } = usePlayerActions();
   const { toast } = useToast();
 
   // Synchronize with blockchain data
@@ -134,10 +135,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       console.log('UserContext: Starting player registration for:', username);
-      
-      // Import here to avoid circular dependency
-      const { usePlayerActions } = await import('@/hooks/useWeb3');
-      const { registerPlayer: registerPlayerAction } = usePlayerActions();
       
       await registerPlayerAction(username);
       

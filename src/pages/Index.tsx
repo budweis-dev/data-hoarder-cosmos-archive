@@ -12,6 +12,7 @@ import { QuestSystem } from '@/components/QuestSystem';
 import { PlayerStats } from '@/components/PlayerStats';
 import { Forum } from '@/components/Forum';
 import { useUser } from '@/contexts/UserContext';
+import { NetworkStatus } from '@/components/NetworkStatus';
 
 const Index = () => {
   const { isConnected, playerData, updatePlayerData } = useUser();
@@ -75,6 +76,11 @@ const Index = () => {
           </div>
         </header>
 
+        {/* Network Status - zobrazit jen pokud je wallet připojen */}
+        <div className="container mx-auto px-4 py-2">
+          <NetworkStatus />
+        </div>
+
         {/* Main Content */}
         <main className="container mx-auto px-4 py-8">
           {!isConnected ? (
@@ -86,6 +92,15 @@ const Index = () => {
                   </h2>
                   <p className="text-cyan-400 font-mono">
                     Join the decentralized knowledge preservation protocol
+                  </p>
+                </div>
+
+                {/* Demo notice */}
+                <div className="bg-orange-500/20 border border-orange-500/50 rounded-lg p-4 mb-8">
+                  <h3 className="text-orange-400 font-mono text-lg mb-2">⚠️ DEMO MODE</h3>
+                  <p className="text-orange-300 text-sm">
+                    Smart contracts are not deployed to Sepolia testnet yet. 
+                    This is a frontend demo showing the user interface and wallet connection.
                   </p>
                 </div>
                 

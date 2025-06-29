@@ -114,26 +114,56 @@ export const usePlayerData = (address?: string) => {
 
   const fetchPlayerData = async () => {
     if (!web3 || !address || !isCorrectNetwork) {
+      console.log('usePlayerData: Skipping fetch - missing requirements', {
+        hasWeb3: !!web3,
+        hasAddress: !!address,
+        isCorrectNetwork
+      });
       return;
     }
 
     setIsLoading(true);
     try {
+      console.log('usePlayerData: Fetching player data for:', address);
       const contract = new web3.eth.Contract(DATA_HOARDER_ABI, CONTRACTS.DATA_HOARDER_ARENA);
       const result = await contract.methods.getPlayer(address).call();
       
+      console.log('usePlayerData: Raw result from contract:', result);
+      
       if (result && typeof result === 'object') {
-        setPlayerData({
+        const playerData = {
           username: result.username as string,
           totalXP: Number(result.totalXP),
           level: Number(result.level),
           storageUsed: Number(result.storageUsed),
           downloadSpeed: Number(result.downloadSpeed),
-        });
+        };
+        
+        console.log('usePlayerData: Parsed player data:', playerData);
+        
+        // Only set if username exists (player is registered)
+        if (playerData.username && playerData.username.trim() !== '') {
+          setPlayerData(playerData);
+        } else {
+          console.log('usePlayerData: Player not registered (empty username)');
+          setPlayerData(null);
+        }
+      } else {
+        console.log('usePlayerData: Invalid result format');
+        setPlayerData(null);
       }
     } catch (error) {
       console.error('Failed to fetch player data:', error);
-      setPlayerData(null);
+      
+      // Check if it's a contract not deployed error
+      if (error.message && error.message.includes('Parameter decoding error')) {
+        console.warn('usePlayerData: Contract not deployed or wrong ABI - this is expected for demo');
+        // For demo purposes, don't spam errors
+        setPlayerData(null);
+      } else {
+        console.error('usePlayerData: Unexpected error:', error);
+        setPlayerData(null);
+      }
     } finally {
       setIsLoading(false);
     }
