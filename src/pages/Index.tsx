@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,17 +11,11 @@ import { Leaderboard } from '@/components/Leaderboard';
 import { QuestSystem } from '@/components/QuestSystem';
 import { PlayerStats } from '@/components/PlayerStats';
 import { Forum } from '@/components/Forum';
+import { useUser } from '@/contexts/UserContext';
 
 const Index = () => {
-  const [isConnected, setIsConnected] = useState(false);
-  const [playerData, setPlayerData] = useState({
-    username: '',
-    level: 1,
-    totalXP: 150,
-    storageUsed: 0,
-    downloadSpeed: 100
-  });
-
+  const { isConnected, playerData, updatePlayerData } = useUser();
+  
   // Simulated terminal boot sequence
   const [bootSequence, setBootSequence] = useState(true);
   
@@ -77,12 +70,7 @@ const Index = () => {
                 <Wifi className="h-4 w-4" />
                 <span>NETWORK: ACTIVE</span>
               </div>
-              <WalletConnection 
-                isConnected={isConnected}
-                onConnect={setIsConnected}
-                playerData={playerData}
-                setPlayerData={setPlayerData}
-              />
+              <WalletConnection />
             </div>
           </div>
         </header>
@@ -225,7 +213,7 @@ const Index = () => {
                 </TabsContent>
                 
                 <TabsContent value="files">
-                  <FileManager playerData={playerData} setPlayerData={setPlayerData} />
+                  <FileManager playerData={playerData} setPlayerData={updatePlayerData} />
                 </TabsContent>
                 
                 <TabsContent value="forum">
@@ -248,7 +236,7 @@ const Index = () => {
                 </TabsContent>
                 
                 <TabsContent value="quests">
-                  <QuestSystem playerData={playerData} setPlayerData={setPlayerData} />
+                  <QuestSystem playerData={playerData} setPlayerData={updatePlayerData} />
                 </TabsContent>
                 
                 <TabsContent value="leaderboard">

@@ -1,93 +1,71 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Wallet, Zap, Loader2 } from 'lucide-react';
-import { useWeb3Connection, usePlayerData, usePlayerActions } from '@/hooks/useWeb3';
+import { useUser } from '@/contexts/UserContext';
+import { useWeb3Connection } from '@/hooks/useWeb3';
 
-interface WalletConnectionProps {
-  isConnected: boolean;
-  onConnect: (connected: boolean) => void;
-  playerData: any;
-  setPlayerData: (data: any) => void;
-}
-
-export const WalletConnection = ({ isConnected, onConnect, playerData, setPlayerData }: WalletConnectionProps) => {
+export const WalletConnection = () => {
   const [showRegistration, setShowRegistration] = useState(false);
   const [username, setUsername] = useState('');
-  const [isRegistering, setIsRegistering] = useState(false);
   
-  const { isConnected: web3Connected, currentAccount, connect, disconnect } = useWeb3Connection();
-  const { playerData: blockchainPlayerData, refetch: refetchPlayerData } = usePlayerData(currentAccount || undefined);
-  const { registerPlayer } = usePlayerActions();
+  const { 
+    isConnected, 
+    playerData, 
+    isLoading, 
+    connectWallet, 
+    disconnectWallet, 
+    registerPlayer 
+  } = useUser();
+  
+  const { 
+    isConnected: web3Connected, 
+    currentAccount 
+  } = useWeb3Connection();
 
-  useEffect(() => {
-    if (web3Connected && blockchainPlayerData?.username) {
-      setPlayerData({
-        username: blockchainPlayerData.username,
-        level: blockchainPlayerData.level,
-        totalXP: blockchainPlayerData.totalXP,
-        storageUsed: blockchainPlayerData.storageUsed,
-        downloadSpeed: blockchainPlayerData.downloadSpeed,
-      });
-      onConnect(true);
-      setShowRegistration(false);
-    } else if (web3Connected && currentAccount && !blockchainPlayerData?.username) {
+  // Show registration form if wallet is connected but player not registered
+  React.useEffect(() => {
+    if (web3Connected && currentAccount && !playerData.username && !isLoading) {
       setShowRegistration(true);
+    } else if (playerData.username) {
+      setShowRegistration(false);
     }
-  }, [web3Connected, blockchainPlayerData, currentAccount, onConnect, setPlayerData]);
+  }, [web3Connected, currentAccount, playerData.username, isLoading]);
 
   const handleConnect = async () => {
-    try {
-      await connect();
-    } catch (error) {
-      console.error('Failed to connect wallet:', error);
-    }
+    await connectWallet();
   };
 
   const handleRegister = async () => {
     if (username.trim()) {
       try {
-        setIsRegistering(true);
         await registerPlayer(username.trim());
-        
-        // Wait a bit for the transaction to be mined
-        setTimeout(async () => {
-          await refetchPlayerData();
-          setIsRegistering(false);
-          setShowRegistration(false);
-        }, 3000);
+        setUsername('');
       } catch (error) {
         console.error('Registration failed:', error);
-        setIsRegistering(false);
       }
     }
   };
 
   const handleDisconnect = () => {
-    disconnect();
-    onConnect(false);
-    setPlayerData({
-      username: '',
-      level: 1,
-      totalXP: 0,
-      storageUsed: 0,
-      downloadSpeed: 100
-    });
+    disconnectWallet();
+    setShowRegistration(false);
   };
 
-  if (web3Connected && blockchainPlayerData?.username) {
+  // Connected and registered player
+  if (isConnected && playerData.username) {
     return (
       <div className="flex items-center space-x-4">
         <div className="text-right">
-          <div className="text-white font-mono text-sm">{blockchainPlayerData.username}</div>
-          <div className="text-cyan-400 text-xs">Level {blockchainPlayerData.level}</div>
+          <div className="text-white font-mono text-sm">{playerData.username}</div>
+          <div className="text-cyan-400 text-xs">Level {playerData.level}</div>
         </div>
         <Badge variant="outline" className="text-green-400 border-green-400">
           <Zap className="h-3 w-3 mr-1" />
-          {blockchainPlayerData.totalXP} XP
+          {playerData.totalXP} XP
         </Badge>
         <Button
           variant="outline"
@@ -101,19 +79,26 @@ export const WalletConnection = ({ isConnected, onConnect, playerData, setPlayer
     );
   }
 
-  if (isRegistering) {
+  // Loading state during registration
+  if (isLoading) {
     return (
       <Card className="absolute top-16 right-4 w-80 bg-black/90 border-cyan-500/50 z-50">
         <CardHeader>
-          <CardTitle className="text-cyan-400 font-mono text-sm">REGISTERING GUARDIAN</CardTitle>
+          <CardTitle className="text-cyan-400 font-mono text-sm">
+            {showRegistration ? 'REGISTERING GUARDIAN' : 'CONNECTING WALLET'}
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-center space-x-2 py-8">
             <Loader2 className="h-6 w-6 text-cyan-400 animate-spin" />
             <div className="text-center">
-              <div className="text-cyan-400 font-mono text-sm">PROCESSING TRANSACTION</div>
+              <div className="text-cyan-400 font-mono text-sm">
+                {showRegistration ? 'PROCESSING TRANSACTION' : 'CONNECTING...'}
+              </div>
               <div className="text-gray-400 text-xs mt-1">
-                Waiting for blockchain confirmation...
+                {showRegistration 
+                  ? 'Waiting for blockchain confirmation...'
+                  : 'Please approve in MetaMask...'}
               </div>
             </div>
           </div>
@@ -122,6 +107,7 @@ export const WalletConnection = ({ isConnected, onConnect, playerData, setPlayer
     );
   }
 
+  // Registration form
   if (showRegistration) {
     return (
       <Card className="absolute top-16 right-4 w-80 bg-black/90 border-cyan-500/50 z-50">
@@ -160,6 +146,7 @@ export const WalletConnection = ({ isConnected, onConnect, playerData, setPlayer
     );
   }
 
+  // MetaMask not installed
   if (!window.ethereum) {
     return (
       <div className="text-red-400 font-mono text-sm">
@@ -168,6 +155,7 @@ export const WalletConnection = ({ isConnected, onConnect, playerData, setPlayer
     );
   }
 
+  // Connect wallet button
   return (
     <Button
       onClick={handleConnect}

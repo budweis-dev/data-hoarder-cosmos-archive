@@ -160,15 +160,20 @@ export const usePlayerActions = () => {
     }
 
     try {
+      console.log('usePlayerActions: Registering player:', username);
       const contract = new web3.eth.Contract(DATA_HOARDER_ABI, CONTRACTS.DATA_HOARDER_ARENA);
-      await contract.methods.registerPlayer(username).send({ from: currentAccount });
+      
+      const tx = await contract.methods.registerPlayer(username).send({ from: currentAccount });
+      console.log('usePlayerActions: Registration transaction successful:', tx);
       
       toast({
         title: "Registration Successful",
         description: `Welcome to the network, ${username}!`,
       });
+      
+      return tx;
     } catch (error) {
-      console.error('Registration failed:', error);
+      console.error('usePlayerActions: Registration failed:', error);
       toast({
         title: "Registration Failed",
         description: "Unable to register player. Please try again.",
