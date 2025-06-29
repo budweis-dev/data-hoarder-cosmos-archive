@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Wallet, User, Zap } from 'lucide-react';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { usePlayerData, usePlayerActions } from '@/hooks/useWeb3Data';
 
 interface WalletConnectionProps {
   isConnected: boolean;
@@ -16,50 +18,64 @@ interface WalletConnectionProps {
 export const WalletConnection = ({ isConnected, onConnect, playerData, setPlayerData }: WalletConnectionProps) => {
   const [showRegistration, setShowRegistration] = useState(false);
   const [username, setUsername] = useState('');
-  const [isConnecting, setIsConnecting] = useState(false);
+  
+  const { address, isConnected: walletConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
+  const { playerData: blockchainPlayerData } = usePlayerData();
+  const { registerPlayer } = usePlayerActions();
 
-  const handleConnect = async () => {
-    setIsConnecting(true);
-    
-    // Simulate wallet connection
-    setTimeout(() => {
-      setShowRegistration(true);
-      setIsConnecting(false);
-    }, 1500);
-  };
-
-  const handleRegister = () => {
-    if (username.trim()) {
+  React.useEffect(() => {
+    if (walletConnected && blockchainPlayerData) {
       setPlayerData({
-        ...playerData,
-        username: username.trim()
+        username: blockchainPlayerData.username,
+        level: blockchainPlayerData.level,
+        totalXP: Number(blockchainPlayerData.totalXP),
+        storageUsed: Number(blockchainPlayerData.storageUsed),
+        downloadSpeed: blockchainPlayerData.downloadSpeed,
       });
       onConnect(true);
+    } else if (walletConnected && !blockchainPlayerData?.username) {
+      setShowRegistration(true);
+    }
+  }, [walletConnected, blockchainPlayerData, onConnect, setPlayerData]);
+
+  const handleConnect = async () => {
+    const injectedConnector = connectors.find(c => c.type === 'injected');
+    if (injectedConnector) {
+      connect({ connector: injectedConnector });
+    }
+  };
+
+  const handleRegister = async () => {
+    if (username.trim()) {
+      await registerPlayer(username.trim());
       setShowRegistration(false);
     }
   };
 
   const handleDisconnect = () => {
+    disconnect();
     onConnect(false);
     setPlayerData({
       username: '',
       level: 1,
-      totalXP: 150,
+      totalXP: 0,
       storageUsed: 0,
       downloadSpeed: 100
     });
   };
 
-  if (isConnected) {
+  if (walletConnected && blockchainPlayerData?.username) {
     return (
       <div className="flex items-center space-x-4">
         <div className="text-right">
-          <div className="text-white font-mono text-sm">{playerData.username}</div>
-          <div className="text-cyan-400 text-xs">Level {playerData.level}</div>
+          <div className="text-white font-mono text-sm">{blockchainPlayerData.username}</div>
+          <div className="text-cyan-400 text-xs">Level {blockchainPlayerData.level}</div>
         </div>
         <Badge variant="outline" className="text-green-400 border-green-400">
           <Zap className="h-3 w-3 mr-1" />
-          {playerData.totalXP} XP
+          {Number(blockchainPlayerData.totalXP)} XP
         </Badge>
         <Button
           variant="outline"
@@ -114,11 +130,10 @@ export const WalletConnection = ({ isConnected, onConnect, playerData, setPlayer
   return (
     <Button
       onClick={handleConnect}
-      disabled={isConnecting}
       className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white font-mono"
     >
       <Wallet className="h-4 w-4 mr-2" />
-      {isConnecting ? 'CONNECTING...' : 'CONNECT WALLET'}
+      CONNECT WALLET
     </Button>
   );
 };

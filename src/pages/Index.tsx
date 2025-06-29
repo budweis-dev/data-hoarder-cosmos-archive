@@ -5,12 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Upload, Database, Users, Trophy, Zap, HardDrive, Wifi } from 'lucide-react';
+import { Upload, Database, Users, Trophy, Zap, HardDrive, Wifi, MessageSquare } from 'lucide-react';
 import { WalletConnection } from '@/components/WalletConnection';
 import { FileManager } from '@/components/FileManager';
 import { Leaderboard } from '@/components/Leaderboard';
 import { QuestSystem } from '@/components/QuestSystem';
 import { PlayerStats } from '@/components/PlayerStats';
+import { Forum } from '@/components/Forum';
 
 const Index = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -140,9 +141,10 @@ const Index = () => {
               
               {/* Main Game Interface */}
               <Tabs defaultValue="dashboard" className="w-full">
-                <TabsList className="grid w-full grid-cols-5 bg-black/40 border border-cyan-500/20">
+                <TabsList className="grid w-full grid-cols-6 bg-black/40 border border-cyan-500/20">
                   <TabsTrigger value="dashboard" className="font-mono">DASHBOARD</TabsTrigger>
                   <TabsTrigger value="files" className="font-mono">DATA MGR</TabsTrigger>
+                  <TabsTrigger value="forum" className="font-mono">FORUM</TabsTrigger>
                   <TabsTrigger value="network" className="font-mono">NETWORK</TabsTrigger>
                   <TabsTrigger value="quests" className="font-mono">QUESTS</TabsTrigger>
                   <TabsTrigger value="leaderboard" className="font-mono">RANKINGS</TabsTrigger>
@@ -224,6 +226,10 @@ const Index = () => {
                 
                 <TabsContent value="files">
                   <FileManager playerData={playerData} setPlayerData={setPlayerData} />
+                </TabsContent>
+                
+                <TabsContent value="forum">
+                  <Forum />
                 </TabsContent>
                 
                 <TabsContent value="network">
