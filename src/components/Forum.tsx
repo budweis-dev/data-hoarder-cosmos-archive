@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MessageSquare, ThumbsUp, ThumbsDown, Plus, Clock, User } from 'lucide-react';
-import { useForumActions } from '@/hooks/useWeb3Data';
+import { useForumActions } from '@/hooks/useWeb3';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface Proposal {
@@ -87,14 +87,22 @@ export const Forum = () => {
 
   const handleCreateProposal = async () => {
     if (newProposal.title && newProposal.description && newProposal.category) {
-      await createProposal(newProposal.title, newProposal.description, newProposal.category);
-      setNewProposal({ title: '', description: '', category: '' });
-      setShowCreateDialog(false);
+      try {
+        await createProposal(newProposal.title, newProposal.description, newProposal.category);
+        setNewProposal({ title: '', description: '', category: '' });
+        setShowCreateDialog(false);
+      } catch (error) {
+        console.error('Failed to create proposal:', error);
+      }
     }
   };
 
   const handleVote = async (proposalId: number, support: boolean) => {
-    await vote(proposalId, support);
+    try {
+      await vote(proposalId, support);
+    } catch (error) {
+      console.error('Failed to vote:', error);
+    }
   };
 
   const formatTimeAgo = (timestamp: number) => {
