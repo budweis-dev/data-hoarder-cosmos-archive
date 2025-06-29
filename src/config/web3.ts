@@ -1,10 +1,14 @@
 
 import { Web3 } from 'web3';
 
-// Smart Contract Addresses (to be deployed)
+// Rinkeby Testnet Configuration
+export const RINKEBY_CHAIN_ID = 4;
+export const RINKEBY_RPC_URL = 'https://rinkeby.infura.io/v3/YOUR_INFURA_PROJECT_ID';
+
+// Smart Contract Addresses (deploy to Rinkeby)
 export const CONTRACTS = {
-  DATA_HOARDER_ARENA: '0x0000000000000000000000000000000000000000', // Placeholder
-  FORUM_VOTING: '0x0000000000000000000000000000000000000000', // Placeholder
+  DATA_HOARDER_ARENA: '0x742d35Cc6634C0532925a3b8D000B32e75847ca1', // Example address - replace with actual
+  FORUM_VOTING: '0x2B4b1b8b3F1d8e7A9c0F2e3D4c5B6a7890123456', // Example address - replace with actual
 } as const;
 
 // Initialize Web3 instance
@@ -26,6 +30,46 @@ export const requestAccounts = async (): Promise<string[]> => {
   if (!web3) throw new Error('Failed to initialize Web3');
   
   return web3.eth.getAccounts();
+};
+
+// Switch to Rinkeby network
+export const switchToRinkeby = async (): Promise<void> => {
+  if (!window.ethereum) {
+    throw new Error('MetaMask not installed');
+  }
+
+  try {
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: `0x${RINKEBY_CHAIN_ID.toString(16)}` }],
+    });
+  } catch (switchError: any) {
+    // This error code indicates that the chain has not been added to MetaMask
+    if (switchError.code === 4902) {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [
+            {
+              chainId: `0x${RINKEBY_CHAIN_ID.toString(16)}`,
+              chainName: 'Rinkeby Test Network',
+              nativeCurrency: {
+                name: 'Ethereum',
+                symbol: 'ETH',
+                decimals: 18,
+              },
+              rpcUrls: [RINKEBY_RPC_URL],
+              blockExplorerUrls: ['https://rinkeby.etherscan.io'],
+            },
+          ],
+        });
+      } catch (addError) {
+        throw new Error('Failed to add Rinkeby network to MetaMask');
+      }
+    } else {
+      throw new Error('Failed to switch to Rinkeby network');
+    }
+  }
 };
 
 // Smart Contract ABIs
@@ -77,6 +121,18 @@ export const DATA_HOARDER_ABI = [
     stateMutability: 'view',
     type: 'function',
   },
+  {
+    inputs: [
+      { name: 'fileName', type: 'string' },
+      { name: 'fileHash', type: 'string' },
+      { name: 'fileSize', type: 'uint256' },
+      { name: 'category', type: 'string' },
+    ],
+    name: 'uploadFile',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
 ] as const;
 
 export const FORUM_VOTING_ABI = [
@@ -118,6 +174,29 @@ export const FORUM_VOTING_ABI = [
         ],
         name: '',
         type: 'tuple',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'getAllProposals',
+    outputs: [
+      {
+        components: [
+          { name: 'id', type: 'uint256' },
+          { name: 'title', type: 'string' },
+          { name: 'description', type: 'string' },
+          { name: 'category', type: 'string' },
+          { name: 'creator', type: 'address' },
+          { name: 'votesFor', type: 'uint256' },
+          { name: 'votesAgainst', type: 'uint256' },
+          { name: 'isActive', type: 'bool' },
+          { name: 'timestamp', type: 'uint256' },
+        ],
+        name: '',
+        type: 'tuple[]',
       },
     ],
     stateMutability: 'view',
