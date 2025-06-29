@@ -5,14 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { AlertTriangle, Wifi, WifiOff } from 'lucide-react';
 import { useWeb3Connection } from '@/hooks/useWeb3';
-import { switchToRinkeby } from '@/config/web3';
+import { switchToSepolia } from '@/config/web3';
 
 export const NetworkStatus = () => {
   const { isConnected, chainId, isCorrectNetwork } = useWeb3Connection();
 
   const handleSwitchNetwork = async () => {
     try {
-      await switchToRinkeby();
+      await switchToSepolia();
     } catch (error) {
       console.error('Failed to switch network:', error);
     }
@@ -39,7 +39,7 @@ export const NetworkStatus = () => {
               <div>
                 <span className="text-orange-400 font-mono text-sm">WRONG NETWORK</span>
                 <div className="text-gray-400 text-xs">
-                  Connected to Chain ID: {chainId} (Expected: Rinkeby)
+                  Connected to Chain ID: {chainId} (Expected: Sepolia)
                 </div>
               </div>
             </div>
@@ -48,7 +48,7 @@ export const NetworkStatus = () => {
               onClick={handleSwitchNetwork}
               className="bg-orange-600 hover:bg-orange-700 text-white font-mono text-xs"
             >
-              SWITCH TO RINKEBY
+              SWITCH TO SEPOLIA
             </Button>
           </div>
         </CardContent>
@@ -60,7 +60,7 @@ export const NetworkStatus = () => {
     <Card className="bg-black/60 border-green-500/30">
       <CardContent className="p-4 flex items-center space-x-3">
         <Wifi className="h-5 w-5 text-green-400" />
-        <span className="text-green-400 font-mono text-sm">RINKEBY TESTNET</span>
+        <span className="text-green-400 font-mono text-sm">SEPOLIA TESTNET</span>
         <Badge className="bg-green-600/20 text-green-400 border-green-400/50 font-mono text-xs">
           CONNECTED
         </Badge>

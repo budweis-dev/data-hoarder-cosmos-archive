@@ -1,7 +1,6 @@
-
 import { useState, useEffect } from 'react';
 import { Web3 } from 'web3';
-import { getWeb3Instance, requestAccounts, switchToRinkeby, CONTRACTS, DATA_HOARDER_ABI, FORUM_VOTING_ABI, RINKEBY_CHAIN_ID } from '../config/web3';
+import { getWeb3Instance, requestAccounts, switchToSepolia, CONTRACTS, DATA_HOARDER_ABI, FORUM_VOTING_ABI, SEPOLIA_CHAIN_ID } from '../config/web3';
 import { PlayerData, ForumProposal } from '../types/web3';
 import { useToast } from './use-toast';
 
@@ -39,7 +38,7 @@ export const useWeb3Connection = () => {
       window.ethereum.on('chainChanged', (chainId: string) => {
         const newChainId = parseInt(chainId, 16);
         setChainId(newChainId);
-        setIsCorrectNetwork(newChainId === RINKEBY_CHAIN_ID);
+        setIsCorrectNetwork(newChainId === SEPOLIA_CHAIN_ID);
       });
     }
 
@@ -58,7 +57,7 @@ export const useWeb3Connection = () => {
           const id = await web3.eth.getChainId();
           const networkId = Number(id);
           setChainId(networkId);
-          setIsCorrectNetwork(networkId === RINKEBY_CHAIN_ID);
+          setIsCorrectNetwork(networkId === SEPOLIA_CHAIN_ID);
         } catch (error) {
           console.error('Failed to get chain ID:', error);
         }
@@ -74,9 +73,9 @@ export const useWeb3Connection = () => {
       setAccounts(accountList);
       setIsConnected(accountList.length > 0);
       
-      // Switch to Rinkeby if not already there
-      if (chainId !== RINKEBY_CHAIN_ID) {
-        await switchToRinkeby();
+      // Switch to Sepolia if not already there
+      if (chainId !== SEPOLIA_CHAIN_ID) {
+        await switchToSepolia();
       }
       
       return accountList;

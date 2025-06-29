@@ -1,11 +1,10 @@
-
 import { Web3 } from 'web3';
 
-// Rinkeby Testnet Configuration
-export const RINKEBY_CHAIN_ID = 4;
-export const RINKEBY_RPC_URL = 'https://rinkeby.infura.io/v3/YOUR_INFURA_PROJECT_ID';
+// Sepolia Testnet Configuration
+export const SEPOLIA_CHAIN_ID = 11155111;
+export const SEPOLIA_RPC_URL = 'https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID';
 
-// Smart Contract Addresses (deploy to Rinkeby)
+// Smart Contract Addresses (deploy to Sepolia)
 export const CONTRACTS = {
   DATA_HOARDER_ARENA: '0x742d35Cc6634C0532925a3b8D000B32e75847ca1', // Example address - replace with actual
   FORUM_VOTING: '0x2B4b1b8b3F1d8e7A9c0F2e3D4c5B6a7890123456', // Example address - replace with actual
@@ -32,8 +31,8 @@ export const requestAccounts = async (): Promise<string[]> => {
   return web3.eth.getAccounts();
 };
 
-// Switch to Rinkeby network
-export const switchToRinkeby = async (): Promise<void> => {
+// Switch to Sepolia network
+export const switchToSepolia = async (): Promise<void> => {
   if (!window.ethereum) {
     throw new Error('MetaMask not installed');
   }
@@ -41,7 +40,7 @@ export const switchToRinkeby = async (): Promise<void> => {
   try {
     await window.ethereum.request({
       method: 'wallet_switchEthereumChain',
-      params: [{ chainId: `0x${RINKEBY_CHAIN_ID.toString(16)}` }],
+      params: [{ chainId: `0x${SEPOLIA_CHAIN_ID.toString(16)}` }],
     });
   } catch (switchError: any) {
     // This error code indicates that the chain has not been added to MetaMask
@@ -51,23 +50,23 @@ export const switchToRinkeby = async (): Promise<void> => {
           method: 'wallet_addEthereumChain',
           params: [
             {
-              chainId: `0x${RINKEBY_CHAIN_ID.toString(16)}`,
-              chainName: 'Rinkeby Test Network',
+              chainId: `0x${SEPOLIA_CHAIN_ID.toString(16)}`,
+              chainName: 'Sepolia Test Network',
               nativeCurrency: {
                 name: 'Ethereum',
                 symbol: 'ETH',
                 decimals: 18,
               },
-              rpcUrls: [RINKEBY_RPC_URL],
-              blockExplorerUrls: ['https://rinkeby.etherscan.io'],
+              rpcUrls: [SEPOLIA_RPC_URL],
+              blockExplorerUrls: ['https://sepolia.etherscan.io'],
             },
           ],
         });
       } catch (addError) {
-        throw new Error('Failed to add Rinkeby network to MetaMask');
+        throw new Error('Failed to add Sepolia network to MetaMask');
       }
     } else {
-      throw new Error('Failed to switch to Rinkeby network');
+      throw new Error('Failed to switch to Sepolia network');
     }
   }
 };
