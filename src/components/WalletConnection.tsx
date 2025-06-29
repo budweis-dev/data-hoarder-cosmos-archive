@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Wallet, Zap } from 'lucide-react';
+import { Wallet, Zap, Loader2 } from 'lucide-react';
 import { useWeb3Connection, usePlayerData, usePlayerActions } from '@/hooks/useWeb3';
 
 interface WalletConnectionProps {
@@ -17,9 +17,10 @@ interface WalletConnectionProps {
 export const WalletConnection = ({ isConnected, onConnect, playerData, setPlayerData }: WalletConnectionProps) => {
   const [showRegistration, setShowRegistration] = useState(false);
   const [username, setUsername] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
   
   const { isConnected: web3Connected, currentAccount, connect, disconnect } = useWeb3Connection();
-  const { playerData: blockchainPlayerData } = usePlayerData(currentAccount || undefined);
+  const { playerData: blockchainPlayerData, refetch: refetchPlayerData } = usePlayerData(currentAccount || undefined);
   const { registerPlayer } = usePlayerActions();
 
   useEffect(() => {
@@ -32,6 +33,7 @@ export const WalletConnection = ({ isConnected, onConnect, playerData, setPlayer
         downloadSpeed: blockchainPlayerData.downloadSpeed,
       });
       onConnect(true);
+      setShowRegistration(false);
     } else if (web3Connected && currentAccount && !blockchainPlayerData?.username) {
       setShowRegistration(true);
     }
@@ -48,10 +50,18 @@ export const WalletConnection = ({ isConnected, onConnect, playerData, setPlayer
   const handleRegister = async () => {
     if (username.trim()) {
       try {
+        setIsRegistering(true);
         await registerPlayer(username.trim());
-        setShowRegistration(false);
+        
+        // Wait a bit for the transaction to be mined
+        setTimeout(async () => {
+          await refetchPlayerData();
+          setIsRegistering(false);
+          setShowRegistration(false);
+        }, 3000);
       } catch (error) {
         console.error('Registration failed:', error);
+        setIsRegistering(false);
       }
     }
   };
@@ -88,6 +98,27 @@ export const WalletConnection = ({ isConnected, onConnect, playerData, setPlayer
           DISCONNECT
         </Button>
       </div>
+    );
+  }
+
+  if (isRegistering) {
+    return (
+      <Card className="absolute top-16 right-4 w-80 bg-black/90 border-cyan-500/50 z-50">
+        <CardHeader>
+          <CardTitle className="text-cyan-400 font-mono text-sm">REGISTERING GUARDIAN</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-center space-x-2 py-8">
+            <Loader2 className="h-6 w-6 text-cyan-400 animate-spin" />
+            <div className="text-center">
+              <div className="text-cyan-400 font-mono text-sm">PROCESSING TRANSACTION</div>
+              <div className="text-gray-400 text-xs mt-1">
+                Waiting for blockchain confirmation...
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 

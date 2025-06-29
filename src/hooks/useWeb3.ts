@@ -112,38 +112,42 @@ export const usePlayerData = (address?: string) => {
   const [isLoading, setIsLoading] = useState(false);
   const { web3, isCorrectNetwork } = useWeb3Connection();
 
-  useEffect(() => {
+  const fetchPlayerData = async () => {
     if (!web3 || !address || !isCorrectNetwork) {
       return;
     }
 
-    const fetchPlayerData = async () => {
-      setIsLoading(true);
-      try {
-        const contract = new web3.eth.Contract(DATA_HOARDER_ABI, CONTRACTS.DATA_HOARDER_ARENA);
-        const result = await contract.methods.getPlayer(address).call();
-        
-        if (result && typeof result === 'object') {
-          setPlayerData({
-            username: result.username as string,
-            totalXP: Number(result.totalXP),
-            level: Number(result.level),
-            storageUsed: Number(result.storageUsed),
-            downloadSpeed: Number(result.downloadSpeed),
-          });
-        }
-      } catch (error) {
-        console.error('Failed to fetch player data:', error);
-        setPlayerData(null);
-      } finally {
-        setIsLoading(false);
+    setIsLoading(true);
+    try {
+      const contract = new web3.eth.Contract(DATA_HOARDER_ABI, CONTRACTS.DATA_HOARDER_ARENA);
+      const result = await contract.methods.getPlayer(address).call();
+      
+      if (result && typeof result === 'object') {
+        setPlayerData({
+          username: result.username as string,
+          totalXP: Number(result.totalXP),
+          level: Number(result.level),
+          storageUsed: Number(result.storageUsed),
+          downloadSpeed: Number(result.downloadSpeed),
+        });
       }
-    };
+    } catch (error) {
+      console.error('Failed to fetch player data:', error);
+      setPlayerData(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchPlayerData();
   }, [web3, address, isCorrectNetwork]);
 
-  return { playerData, isLoading };
+  return { 
+    playerData, 
+    isLoading, 
+    refetch: fetchPlayerData 
+  };
 };
 
 export const usePlayerActions = () => {
