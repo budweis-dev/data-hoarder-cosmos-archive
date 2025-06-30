@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Web3 } from 'web3';
 import { getWeb3Instance, requestAccounts, switchToSepolia, CONTRACTS, DATA_HOARDER_ABI, FORUM_VOTING_ABI, SEPOLIA_CHAIN_ID } from '../config/web3';
@@ -314,20 +313,38 @@ export const useForumActions = () => {
       const contract = new web3.eth.Contract(FORUM_VOTING_ABI, CONTRACTS.FORUM_VOTING);
       const result = await contract.methods.getAllProposals().call();
       
-      // The getAllProposals method now returns arrays for each field
-      const [ids, titles, categories, creators, votesFor, votesAgainst, isActive, timestamps] = result as [
-        bigint[], string[], string[], string[], bigint[], bigint[], boolean[], bigint[]
-      ];
+      // Handle the contract result more safely without strict type assertion
+      if (!result || !Array.isArray(result) || result.length < 8) {
+        console.warn('getAllProposals returned unexpected format:', result);
+        return [];
+      }
 
-      return ids.map((id, index) => ({
+      const [ids, titles, categories, creators, votesFor, votesAgainst, isActive, timestamps] = result;
+
+      // Ensure all arrays have the same length and are valid
+      if (!Array.isArray(ids) || !Array.isArray(titles) || !Array.isArray(categories) || 
+          !Array.isArray(creators) || !Array.isArray(votesFor) || !Array.isArray(votesAgainst) ||
+          !Array.isArray(isActive) || !Array.isArray(timestamps)) {
+        console.warn('getAllProposals: Invalid array structure');
+        return [];
+      }
+
+      const length = ids.length;
+      if (![titles, categories, creators, votesFor, votesAgainst, isActive, timestamps]
+          .every(arr => arr.length === length)) {
+        console.warn('getAllProposals: Array length mismatch');
+        return [];
+      }
+
+      return ids.map((id: any, index: number) => ({
         id: Number(id),
-        title: titles[index],
+        title: String(titles[index]),
         description: '', // Description not returned by getAllProposals, would need separate call
-        category: categories[index],
-        creator: creators[index],
+        category: String(categories[index]),
+        creator: String(creators[index]),
         votesFor: Number(votesFor[index]),
         votesAgainst: Number(votesAgainst[index]),
-        isActive: isActive[index],
+        isActive: Boolean(isActive[index]),
         timestamp: Number(timestamps[index]),
         endTime: 0, // Would need separate call to getProposal for full details
         tags: [], // Would need separate call to getProposal for full details
