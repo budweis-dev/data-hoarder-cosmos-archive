@@ -9,10 +9,15 @@ Tento projekt je nakonfigurován pro automatické nasazení na GitHub Pages s vy
 V nastavení vašeho GitHub repozitáře přidejte tyto secrets:
 
 - `SEPOLIA_PRIVATE_KEY` - Private key vašeho Ethereum účtu pro deploy kontraktů
-- `INFURA_PROJECT_ID` - Project ID z Infura pro přístup k Sepolia síti
+- `INFURA_API_KEY` - API klíč z Infura pro přístup k Sepolia síti (to samé jako Project ID)
 - `ETHERSCAN_API_KEY` - API klíč pro verifikaci kontraktů (volitelné)
 
-### 2. GitHub Pages
+### 2. Získání Infura API Key
+1. Jděte na [infura.io](https://infura.io) a vytvořte účet
+2. Vytvořte nový projekt
+3. V Dashboard vašeho projektu najdete "API Key" - to je hodnota, kterou použijete jako `INFURA_API_KEY`
+
+### 3. GitHub Pages
 1. Jděte do Settings > Pages
 2. Zvolte "GitHub Actions" jako Source
 3. Volitelně nastavte custom domain v souboru `.github/workflows/deploy.yml`
@@ -73,3 +78,6 @@ Struktura je připravena pro:
 1. **Kontrakty se nenasadí**: Zkontrolujte GitHub Secrets
 2. **Build failuje**: Zkontrolujte konzoli v GitHub Actions
 3. **GitHub Pages nefunguje**: Zkontrolujte Pages nastavení v repozitáři
+
+## Poznámka k Infura
+Infura používá termín "API Key", který je stejný jako "Project ID". Váš Infura API Key funguje jako identifikátor projektu v URL endpointech.

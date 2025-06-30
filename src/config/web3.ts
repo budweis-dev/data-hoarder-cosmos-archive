@@ -1,8 +1,9 @@
+
 import { Web3 } from 'web3';
 
 // Sepolia Testnet Configuration
 export const SEPOLIA_CHAIN_ID = 11155111;
-export const SEPOLIA_RPC_URL = 'https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID';
+export const SEPOLIA_RPC_URL = 'https://sepolia.infura.io/v3/YOUR_INFURA_API_KEY';
 
 // Smart Contract Addresses (deploy to Sepolia)
 export const CONTRACTS = {
