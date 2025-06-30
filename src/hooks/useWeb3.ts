@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Web3 } from 'web3';
 import { getWeb3Instance, requestAccounts, switchToSepolia, CONTRACTS, DATA_HOARDER_ABI, FORUM_VOTING_ABI, SEPOLIA_CHAIN_ID } from '../config/web3';
@@ -249,14 +250,21 @@ export const useForumActions = () => {
   const { web3, currentAccount, isCorrectNetwork } = useWeb3Connection();
   const { toast } = useToast();
 
-  const createProposal = async (title: string, description: string, category: string) => {
+  const createProposal = async (
+    title: string, 
+    description: string, 
+    category: string,
+    duration: number = 7 * 24 * 60 * 60, // Default 7 days in seconds
+    tags: string[] = [],
+    requiredLevel: number = 0
+  ) => {
     if (!web3 || !currentAccount || !isCorrectNetwork) {
       throw new Error('Web3 not connected or wrong network');
     }
 
     try {
       const contract = new web3.eth.Contract(FORUM_VOTING_ABI, CONTRACTS.FORUM_VOTING);
-      await contract.methods.createProposal(title, description, category).send({ from: currentAccount });
+      await contract.methods.createProposal(title, description, category, duration, tags, requiredLevel).send({ from: currentAccount });
       
       toast({
         title: "Proposal Created",
@@ -306,16 +314,24 @@ export const useForumActions = () => {
       const contract = new web3.eth.Contract(FORUM_VOTING_ABI, CONTRACTS.FORUM_VOTING);
       const result = await contract.methods.getAllProposals().call();
       
-      return (result as any[]).map((proposal: any) => ({
-        id: Number(proposal.id),
-        title: proposal.title,
-        description: proposal.description,
-        category: proposal.category,
-        creator: proposal.creator,
-        votesFor: Number(proposal.votesFor),
-        votesAgainst: Number(proposal.votesAgainst),
-        isActive: proposal.isActive,
-        timestamp: Number(proposal.timestamp),
+      // The getAllProposals method now returns arrays for each field
+      const [ids, titles, categories, creators, votesFor, votesAgainst, isActive, timestamps] = result as [
+        bigint[], string[], string[], string[], bigint[], bigint[], boolean[], bigint[]
+      ];
+
+      return ids.map((id, index) => ({
+        id: Number(id),
+        title: titles[index],
+        description: '', // Description not returned by getAllProposals, would need separate call
+        category: categories[index],
+        creator: creators[index],
+        votesFor: Number(votesFor[index]),
+        votesAgainst: Number(votesAgainst[index]),
+        isActive: isActive[index],
+        timestamp: Number(timestamps[index]),
+        endTime: 0, // Would need separate call to getProposal for full details
+        tags: [], // Would need separate call to getProposal for full details
+        requiredLevel: 0, // Would need separate call to getProposal for full details
       }));
     } catch (error) {
       console.error('Failed to fetch proposals:', error);
