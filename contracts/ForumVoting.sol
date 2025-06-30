@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
@@ -159,10 +158,10 @@ contract ForumVoting {
         emit CommentAdded(proposalId, msg.sender, proposalComments[proposalId].length - 1);
     }
 
-    function voteOnComment(uint256 proposalId, uint256 commentIndex, int8 vote) public onlyRegisteredPlayer {
+    function voteOnComment(uint256 proposalId, uint256 commentIndex, int8 voteValue) public onlyRegisteredPlayer {
         require(proposalId < proposalCount, "Proposal does not exist");
         require(commentIndex < proposalComments[proposalId].length, "Comment does not exist");
-        require(vote >= -1 && vote <= 1, "Invalid vote value");
+        require(voteValue >= -1 && voteValue <= 1, "Invalid vote value");
 
         Comment storage comment = proposalComments[proposalId][commentIndex];
         int8 previousVote = comment.userVotes[msg.sender];
@@ -175,14 +174,14 @@ contract ForumVoting {
         }
 
         // Add new vote
-        comment.userVotes[msg.sender] = vote;
-        if (vote == 1) {
+        comment.userVotes[msg.sender] = voteValue;
+        if (voteValue == 1) {
             comment.upvotes++;
-        } else if (vote == -1) {
+        } else if (voteValue == -1) {
             comment.downvotes++;
         }
 
-        emit CommentVoted(proposalId, commentIndex, msg.sender, vote);
+        emit CommentVoted(proposalId, commentIndex, msg.sender, voteValue);
     }
 
     function closeProposal(uint256 proposalId) public {

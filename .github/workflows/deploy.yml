@@ -48,7 +48,7 @@ jobs:
     
     - name: Update web3 config
       if: steps.deploy.outputs.deployed == 'true'
-      run: node scripts/update-config.js
+      run: node scripts/update-config.cjs
     
     - name: Upload contract artifacts
       uses: actions/upload-artifact@v4

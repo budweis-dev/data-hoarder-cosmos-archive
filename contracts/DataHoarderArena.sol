@@ -112,17 +112,17 @@ contract DataHoarderArena {
         require(players[playerAddr].isRegistered, "Player not registered");
         Player storage player = players[playerAddr];
         
-        uint256 totalDownloads = 0;
+        uint256 downloadsCount = 0;
         FileData[] storage files = playerFiles[playerAddr];
         for (uint i = 0; i < files.length; i++) {
-            totalDownloads += files[i].downloadCount;
+            downloadsCount += files[i].downloadCount;
         }
         
         return (
             player.registrationTime,
             player.lastActiveTime,
             files.length,
-            totalDownloads
+            downloadsCount
         );
     }
 
@@ -200,8 +200,6 @@ contract DataHoarderArena {
         require(players[player].isRegistered, "Player not registered");
         require(amount > 0, "XP amount must be greater than 0");
 
-        uint16 oldLevel = players[player].level;
-        
         players[player].totalXP += amount;
         players[player].categoryXP[category] += amount;
         players[player].storageUsed += uint64(amount * 1024); // Simulate storage usage
@@ -326,16 +324,16 @@ contract DataHoarderArena {
         uint256 totalFiles,
         uint256 totalXPDistributed
     ) {
-        uint256 totalFiles = 0;
+        uint256 fileCount = 0;
         uint256 totalXP = 0;
         
         for (uint256 i = 0; i < playerAddresses.length; i++) {
             address player = playerAddresses[i];
-            totalFiles += playerFiles[player].length;
+            fileCount += playerFiles[player].length;
             totalXP += players[player].totalXP;
         }
         
-        return (playerAddresses.length, totalFiles, totalXP);
+        return (playerAddresses.length, fileCount, totalXP);
     }
 
     // Internal functions
