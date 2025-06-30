@@ -1,4 +1,3 @@
-
 const hre = require("hardhat");
 const fs = require("fs");
 const path = require("path");
@@ -40,12 +39,19 @@ async function main() {
     console.log("⚠️  Contract linking failed (might be already set):", error.message);
   }
 
+  // Generate GitHub Pages URL
+  const repoOwner = process.env.GITHUB_REPOSITORY?.split('/')[0] || 'your-username';
+  const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1] || 'your-repo';
+  const githubPagesUrl = `https://${repoOwner}.github.io/${repoName}`;
+
   // Save comprehensive deployment info
   const deploymentInfo = {
     network: "sepolia",
     chainId: 11155111,
     timestamp: new Date().toISOString(),
     deployer: deployer.address,
+    githubPagesUrl: githubPagesUrl,
+    repository: process.env.GITHUB_REPOSITORY || 'unknown',
     gasUsed: {
       dataHoarderArena: "estimated",
       forumVoting: "estimated"
@@ -72,6 +78,8 @@ async function main() {
     ForumVoting: forumVotingAddress,
     network: "sepolia",
     chainId: 11155111,
+    githubPagesUrl: githubPagesUrl,
+    deployedAt: new Date().toISOString()
   };
 
   fs.writeFileSync("contract-addresses.json", JSON.stringify(addresses, null, 2));
@@ -79,6 +87,7 @@ async function main() {
   
   console.log("\n📄 Contract addresses saved to contract-addresses.json");
   console.log("📊 Deployment info saved to deployment-info.json");
+  console.log("🌐 GitHub Pages URL:", githubPagesUrl);
 
   // Verify contracts on Etherscan if API key is provided
   if (process.env.ETHERSCAN_API_KEY) {
@@ -124,6 +133,7 @@ async function main() {
   console.log("- ForumVoting:", forumVotingAddress);
   console.log("- Network: Sepolia Testnet");
   console.log("- Deployer:", deployer.address);
+  console.log("- GitHub Pages:", githubPagesUrl);
   
   if (process.env.ETHERSCAN_API_KEY) {
     console.log("\n🔗 View on Etherscan:");
@@ -134,7 +144,7 @@ async function main() {
   console.log("\n📝 Next steps:");
   console.log("1. Update your frontend with the new contract addresses");
   console.log("2. Test contract interactions on Sepolia testnet");
-  console.log("3. Consider implementing additional features");
+  console.log("3. Visit your deployed app at:", githubPagesUrl);
 }
 
 main()

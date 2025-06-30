@@ -89,9 +89,36 @@ jobs:
         VITE_DEFAULT_CHAIN_ID: ${{ secrets.VITE_DEFAULT_CHAIN_ID }}
         VITE_APP_NAME: ${{ secrets.VITE_APP_NAME }}
     
+    - name: Create deployment info
+      run: |
+        echo "Creating deployment summary..."
+        REPO_OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
+        REPO_NAME=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
+        GITHUB_PAGES_URL="https://${REPO_OWNER}.github.io/${REPO_NAME}"
+        
+        echo "{
+          \"deployedAt\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+          \"githubPagesUrl\": \"$GITHUB_PAGES_URL\",
+          \"repository\": \"$GITHUB_REPOSITORY\",
+          \"commit\": \"$GITHUB_SHA\",
+          \"branch\": \"$GITHUB_REF_NAME\"
+        }" > deployment-summary.json
+        
+        echo "🌐 Your app will be available at: $GITHUB_PAGES_URL"
+    
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./dist
-        cname: your-domain.com # Optional: replace with your custom domain
+        # cname: your-domain.com # Optional: replace with your custom domain
+    
+    - name: Upload deployment info
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-info
+        path: |
+          deployment-summary.json
+          contract-addresses.json
+          deployment-info.json
+        retention-days: 30
